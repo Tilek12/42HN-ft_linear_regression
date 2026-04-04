@@ -1,4 +1,4 @@
-from utils import load_data, estimate_price
+from utils import load_data, estimate_price, normalize
 
 def train(X, Y, learning_rate=0.0001, iterations=1000):
     theta0 = 0.0
@@ -37,7 +37,10 @@ def train(X, Y, learning_rate=0.0001, iterations=1000):
 
 X, Y = load_data("data.csv")
 
-theta0, theta1 = train(X, Y)
+# Normalize mileage
+X_norm, mean, std = normalize(X)
+
+theta0, theta1 = train(X_norm, Y)
 
 print("\nFinal values:")
 print("theta0 =", theta0)
