@@ -20,3 +20,8 @@ def load_data(filepath):
             Y.append(float(price))
 
     return X, Y
+
+# theta0 - base price (starting value)
+# theta1 - how price changes with mileage
+def estimate_price(mileage, theta0, theta1):
+    return theta0 + theta1 * mileage
