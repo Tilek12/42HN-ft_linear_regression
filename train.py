@@ -1,3 +1,4 @@
+import json
 from utils import load_data, estimate_price, normalize
 
 def train(X, Y, learning_rate=0.0001, iterations=1000):
@@ -39,9 +40,23 @@ X, Y = load_data("data.csv")
 
 # Normalize mileage
 X_norm, mean, std = normalize(X)
-
+if std == 0:
+    std = 1
+    
 theta0, theta1 = train(X_norm, Y)
 
 print("\nFinal values:")
 print("theta0 =", theta0)
 print("theta1 =", theta1)
+
+model = {
+    "theta0": theta0,
+    "theta1": theta1,
+    "mean": mean,
+    "std": std
+}
+
+with open("model.json", "w") as f:
+    json.dump(model, f)
+
+print("\nModel saved to model.json")
