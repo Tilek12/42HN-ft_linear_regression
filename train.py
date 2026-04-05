@@ -1,6 +1,6 @@
 import json
 import matplotlib.pyplot as plt
-from utils import load_data, estimate_price, normalize
+from utils import load_data, estimate_price, normalize, compute_mse, compute_rmse, compute_r2
 
 def train(X, Y, learning_rate=0.01, iterations=10000):
     theta0 = 0.0
@@ -86,3 +86,15 @@ plt.legend()
 
 # Show plot
 plt.show()
+
+print("\nPrecision of the algorithm:")
+
+mse = compute_mse(X_norm, Y, theta0, theta1)
+print("MSE:", mse)
+
+rmse = compute_rmse(X_norm, Y, theta0, theta1)
+print("RMSE:", rmse)
+
+r2 = compute_r2(X_norm, Y, theta0, theta1)
+print("R² score:", r2)
+
