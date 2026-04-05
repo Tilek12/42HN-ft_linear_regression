@@ -1,7 +1,8 @@
 import json
+import matplotlib.pyplot as plt
 from utils import load_data, estimate_price, normalize
 
-def train(X, Y, learning_rate=0.0001, iterations=1000):
+def train(X, Y, learning_rate=0.01, iterations=10000):
     theta0 = 0.0
     theta1 = 0.0
 
@@ -42,7 +43,7 @@ X, Y = load_data("data.csv")
 X_norm, mean, std = normalize(X)
 if std == 0:
     std = 1
-    
+
 theta0, theta1 = train(X_norm, Y)
 
 print("\nFinal values:")
@@ -60,3 +61,28 @@ with open("model.json", "w") as f:
     json.dump(model, f)
 
 print("\nModel saved to model.json")
+
+# Plot real data
+plt.scatter(X, Y, label="Real data")
+
+# Create line (predictions)
+X_line = sorted(X)
+Y_line = []
+
+for x in X_line:
+    x_norm = (x - mean) / std
+    y_pred = theta0 + theta1 * x_norm
+    Y_line.append(y_pred)
+
+# Plot regression line
+plt.plot(X_line, Y_line, color="red", label="Regression line")
+
+# Labels
+plt.xlabel("Mileage (km)")
+plt.ylabel("Price")
+plt.title("Linear Regression - Car Price Prediction")
+
+plt.legend()
+
+# Show plot
+plt.show()
