@@ -70,6 +70,14 @@ print(f"MSE  = {mse:.2f}")
 print(f"RMSE = {rmse:.2f}")
 print(f"R²   = {r2:.3f}")
 
+# -------- TEST without normalization -------- #
+
+theta0_raw, theta1_raw = train(X, Y, learning_rate=0.0000000001, iterations=1000)
+
+print("\nWithout normalization:")
+print("Raw theta0:", theta0_raw)
+print("Raw theta1:", theta1_raw)
+
 # ---------------- PLOTTING ---------------- #
 
 plt.scatter(X, Y, label="Real data")
