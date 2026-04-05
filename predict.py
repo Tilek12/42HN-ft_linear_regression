@@ -1,21 +1,21 @@
 import json
 
-# Load model
-with open("model.json", "r") as f:
-    model = json.load(f)
+def load_model():
+    with open("model.json", "r") as f:
+        return json.load(f)
 
-theta0 = model["theta0"]
-theta1 = model["theta1"]
-mean = model["mean"]
-std = model["std"]
 
-# Ask user input
-mileage = float(input("Enter mileage: "))
+def predict(mileage, model):
+    x_norm = (mileage - model["mean"]) / model["std"]
+    return model["theta0"] + model["theta1"] * x_norm
 
-# Normalize input
-normalized_mileage = (mileage - mean) / std
 
-# Predict
-price = theta0 + theta1 * normalized_mileage
+# --- main ---
+model = load_model()
 
-print(f"Estimated price: {price}")
+try:
+    mileage = float(input("Enter mileage: "))
+    price = predict(mileage, model)
+    print(f"Estimated price: {price:.2f}")
+except ValueError:
+    print("Invalid input. Please enter a number.")
