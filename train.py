@@ -1,9 +1,6 @@
-import json
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-
-from utils import compute_mse, compute_r2, compute_rmse, estimate_price, load_data, normalize
+from utils import estimate_price, load_data, normalize, save_model, plot_regression
 
 
 def train(X, Y, learning_rate=0.01, iterations=10000, verbose_interval=500):
@@ -42,48 +39,22 @@ def train(X, Y, learning_rate=0.01, iterations=10000, verbose_interval=500):
     return theta0, theta1
 
 
-def save_model(model_path, theta0, theta1, mean, std, min_km, max_km):
-    model = {
-        "theta0": theta0,
-        "theta1": theta1,
-        "mean": mean,
-        "std": std,
-        "min_km": min_km,
-        "max_km": max_km,
-    }
-    with open(model_path, "w", encoding="utf-8") as file:
-        json.dump(model, file, indent=2)
-
-
-def evaluate_model(X_norm, Y, theta0, theta1):
-    mse = compute_mse(X_norm, Y, theta0, theta1)
-    rmse = compute_rmse(X_norm, Y, theta0, theta1)
-    r2 = compute_r2(X_norm, Y, theta0, theta1)
-    return mse, rmse, r2
-
-
-def plot_regression(X_raw, Y, mean, std, theta0, theta1):
-    plt.scatter(X_raw, Y, label="Real data")
-
-    X_line = sorted(X_raw)
-    Y_line = [estimate_price((x - mean) / std, theta0, theta1) for x in X_line]
-
-    plt.plot(X_line, Y_line, color="red", label="Regression line")
-    plt.xlabel("Mileage (km)")
-    plt.ylabel("Price")
-    plt.title("Linear Regression - Car Price Prediction")
-    plt.legend()
-    plt.show()
-
-
 def main():
+    """
+    Orchestrate end-to-end training:
+    1) load and normalize data,
+    2) train parameters,
+    3) save model,
+    4) optionally plot regression.
+    """
     base_dir = Path(__file__).resolve().parent
 
     data_path = base_dir / "data.csv"
     model_path = base_dir / "model.json"
     learning_rate = 0.01
-    iterations = 10000
-    show_plot = True
+    iterations = 2100
+    verbose_interval = 100
+    show_plot = False
 
     X_raw, Y = load_data(data_path)
     X_norm, mean, std = normalize(X_raw)
@@ -93,6 +64,7 @@ def main():
         Y,
         learning_rate=learning_rate,
         iterations=iterations,
+        verbose_interval=verbose_interval,
     )
 
     print("\nFinal model:")
@@ -109,12 +81,6 @@ def main():
         max(X_raw),
     )
     print(f"Model saved to {model_path}")
-
-    mse, rmse, r2 = evaluate_model(X_norm, Y, theta0, theta1)
-    print("\nEvaluation:")
-    print(f"MSE  = {mse:.2f}")
-    print(f"RMSE = {rmse:.2f}")
-    print(f"R²   = {r2:.3f}")
 
     # Demonstration: training without normalization usually needs tiny LR and converges slower.
     theta0_raw, theta1_raw = train(X_raw, Y, learning_rate=1e-10, iterations=1000, verbose_interval=0)

@@ -1,30 +1,5 @@
-import json
 from pathlib import Path
-
-
-def load_model(filepath="model.json"):
-    """
-    Load trained model parameters from JSON file.
-    """
-    path = Path(filepath)
-
-    try:
-        with path.open("r") as file:
-            model = json.load(file)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Model file not found: {path}")
-    except json.JSONDecodeError as exc:
-        raise ValueError(f"Invalid JSON in model file: {path}") from exc
-
-    required_keys = {"theta0", "theta1", "mean", "std"}
-    missing_keys = required_keys - set(model.keys())
-    if missing_keys:
-        raise ValueError(f"Model file is missing keys: {sorted(missing_keys)}")
-
-    if model["std"] == 0:
-        raise ValueError("Invalid model: std cannot be 0")
-
-    return model
+from utils import load_model
 
 
 def predict(mileage, model):
@@ -39,6 +14,9 @@ def predict(mileage, model):
 
 
 def main():
+    """
+    Load trained model, prompt for mileage, and print predicted car price.
+    """
     base_dir = Path(__file__).resolve().parent
     model_path = base_dir / "model.json"
 

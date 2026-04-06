@@ -228,6 +228,4 @@ In this project, we:
 - evaluated performance using metrics
 - visualized results
 
-👉 This is a **basic but complete Machine Learning pipeline**
-
 ---

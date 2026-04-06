@@ -1,4 +1,7 @@
 import csv
+import json
+import matplotlib.pyplot as plt
+
 from pathlib import Path
 
 
@@ -76,57 +79,69 @@ def normalize(X):
     return X_norm, mean, std
 
 
-# ---------- Evaluation Metrics ----------
-
-
-def _validate_xy(X, Y):
-    if not X or not Y:
-        raise ValueError("X and Y must be non-empty.")
-    if len(X) != len(Y):
-        raise ValueError(f"Length mismatch: len(X)={len(X)}, len(Y)={len(Y)}")
-
-def compute_mse(X, Y, theta0, theta1):
+def save_model(model_path, theta0, theta1, mean, std, min_km, max_km):
     """
-    Mean Squared Error:
-    average squared difference between prediction and real value
+    Persist trained model parameters and scaling metadata to a JSON file.
+
+    Stored values:
+    - theta0, theta1: learned regression parameters
+    - mean, std: normalization parameters used during training
+    - min_km, max_km: training mileage range for prediction warnings
     """
-    _validate_xy(X, Y)
-    m = len(X)
-    error = 0.0
+    model = {
+        "theta0": theta0,
+        "theta1": theta1,
+        "mean": mean,
+        "std": std,
+        "min_km": min_km,
+        "max_km": max_km,
+    }
+    with open(model_path, "w", encoding="utf-8") as file:
+        json.dump(model, file, indent=2)
 
-    for i in range(m):
-        pred = estimate_price(X[i], theta0, theta1)
-        error += (pred - Y[i]) ** 2
 
-    return error / m
-
-
-def compute_rmse(X, Y, theta0, theta1):
+def load_model(filepath="model.json"):
     """
-    Root Mean Squared Error:
-    same as MSE but in original unit (price)
+    Load trained model parameters from JSON file.
     """
-    return compute_mse(X, Y, theta0, theta1) ** 0.5  # FIXED BUG
+    path = Path(filepath)
+
+    try:
+        with path.open("r") as file:
+            model = json.load(file)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Model file not found: {path}")
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON in model file: {path}") from exc
+
+    required_keys = {"theta0", "theta1", "mean", "std"}
+    missing_keys = required_keys - set(model.keys())
+    if missing_keys:
+        raise ValueError(f"Model file is missing keys: {sorted(missing_keys)}")
+
+    if model["std"] == 0:
+        raise ValueError("Invalid model: std cannot be 0")
+
+    return model
 
 
-def compute_r2(X, Y, theta0, theta1):
+def plot_regression(X_raw, Y, mean, std, theta0, theta1):
     """
-    R² Score:
-    measures how well the model explains variance in data
+    Plot dataset points and the learned regression line.
+
+    Notes:
+    - `X_raw` is used on the x-axis to keep mileage in original units.
+    - Line predictions are computed by normalizing each x with `mean` and `std`.
     """
-    _validate_xy(X, Y)
-    m = len(X)
-    mean_y = sum(Y) / m
+    plt.scatter(X_raw, Y, label="Real data")
 
-    ss_total = 0.0
-    ss_residual = 0.0
+    X_line = sorted(X_raw)
+    Y_line = [estimate_price((x - mean) / std, theta0, theta1) for x in X_line]
 
-    for i in range(m):
-        pred = estimate_price(X[i], theta0, theta1)
-        ss_residual += (Y[i] - pred) ** 2
-        ss_total += (Y[i] - mean_y) ** 2
+    plt.plot(X_line, Y_line, color="red", label="Regression line")
+    plt.xlabel("Mileage (km)")
+    plt.ylabel("Price")
+    plt.title("Linear Regression - Car Price Prediction")
+    plt.legend()
+    plt.show()
 
-    if ss_total == 0:
-        return 1.0 if ss_residual == 0 else 0.0
-
-    return 1 - (ss_residual / ss_total)
