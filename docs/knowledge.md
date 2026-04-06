@@ -7,6 +7,7 @@
 5. ```pip install matplotlib``` - install dependecy matplotlib
 6. ```python train.py``` - run training program
 7. ```python predict.py``` - run predicting program
+8. ```python precision.py``` - run precision checking program
 ---
 
 # 📘 Linear Regression – Knowledge Base (ft_linear_regression)
